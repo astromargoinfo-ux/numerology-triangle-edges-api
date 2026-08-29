@@ -13,10 +13,6 @@
     },
     {
       "src": "/api/triangle",
-      "dest": "/api.js?mode=triangle"
-    },
-    {
-      "src": "/",
       "dest": "/api.js"
     }
   ]
