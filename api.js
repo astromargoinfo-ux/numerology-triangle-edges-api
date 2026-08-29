@@ -9,7 +9,13 @@ if (match) {
 if (!match) { throw new Error('Используйте формат ДД.ММ.ГГГГ'); }
 const d = Number(day); const m = Number(month); const y = Number(year);
 const date = new Date(Date.UTC(y, m - 1, d));
-if ( date.getUTCFullYear() !== y  date.getUTCMonth() !== m - 1  date.getUTCDate() !== d ) { throw new Error('Такой даты не существует'); }
+if (
+  date.getUTCFullYear() !== 
+  y  date.getUTCMonth() !== m - 1  
+  date.getUTCDate() !== d
+    ) { 
+      throw new Error('Такой даты не существует');
+    }
 return { day: d, month: m, year: y, normalized: ${day}.${month}.${year}, }; }
 const digitSum = (n) => String(Math.abs(n)) .split('') .reduce((sum, digit) => sum + Number(digit), 0);
 const reduce22 = (n) => { let value = n;
