@@ -89,7 +89,6 @@ function calculateTriangle(birthDate) {
 
 /* =========================
    ВЕКТОРНЫЕ ЦИФРЫ
-   Без шрифтов
 ========================= */
 
 const SEGMENTS = {
@@ -227,7 +226,7 @@ function circleNumber(
 }
 
 /* =========================
-   КАРТИНКА ТРЕУГОЛЬНИКА
+   КАРТИНКА
 ========================= */
 
 function makeSvg(values) {
@@ -254,7 +253,7 @@ function makeSvg(values) {
       fill="#ffffff"
     />
 
-    <!-- Сам треугольник остаётся чёрным -->
+    <!-- Треугольник -->
 
     <line
       x1="600"
@@ -309,8 +308,6 @@ function makeSvg(values) {
       0.82
     )}
 
-    <!-- CENTER теперь ВНИЗУ на нижней линии -->
-
     ${circleNumber(
       center,
       600,
@@ -319,8 +316,7 @@ function makeSvg(values) {
       0.82
     )}
 
-    <!-- РЁБРА:
-         19 и 20 красные -->
+    <!-- Красные рёбра -->
 
     ${circleNumber(
       edge_left,
@@ -365,7 +361,7 @@ module.exports = async function handler(req, res) {
     const values = calculateTriangle(birthDate);
     const svg = makeSvg(values);
 
-    /* SVG — только если вручную понадобится */
+    /* SVG */
 
     if (format === "svg") {
       res.setHeader(
@@ -373,10 +369,15 @@ module.exports = async function handler(req, res) {
         "image/svg+xml; charset=utf-8"
       );
 
+      res.setHeader(
+        "Cache-Control",
+        "no-store, no-cache, must-revalidate, proxy-revalidate"
+      );
+
       return res.status(200).send(svg);
     }
 
-    /* PNG — именно это получает SendPulse */
+    /* PNG для SendPulse */
 
     if (format === "png") {
       const pngBuffer = await sharp(
@@ -392,7 +393,17 @@ module.exports = async function handler(req, res) {
 
       res.setHeader(
         "Cache-Control",
-        "public, max-age=3600"
+        "no-store, no-cache, must-revalidate, proxy-revalidate"
+      );
+
+      res.setHeader(
+        "Pragma",
+        "no-cache"
+      );
+
+      res.setHeader(
+        "Expires",
+        "0"
       );
 
       return res.status(200).send(
@@ -400,7 +411,7 @@ module.exports = async function handler(req, res) {
       );
     }
 
-    /* Обычный JSON-ответ */
+    /* JSON */
 
     const protocol =
       req.headers["x-forwarded-proto"] ||
@@ -410,11 +421,19 @@ module.exports = async function handler(req, res) {
       req.headers["x-forwarded-host"] ||
       req.headers.host;
 
+    const version = Date.now();
+
     const imageUrl =
       `${protocol}://${host}` +
       `/api/calculate?birth_date=` +
       `${encodeURIComponent(birthDate)}` +
-      `&format=png`;
+      `&format=png` +
+      `&v=${version}`;
+
+    res.setHeader(
+      "Cache-Control",
+      "no-store, no-cache, must-revalidate, proxy-revalidate"
+    );
 
     return res.status(200).json({
       ok: true,
@@ -428,9 +447,6 @@ module.exports = async function handler(req, res) {
       edge_right: values.edge_right,
 
       image_url: imageUrl,
-
-      /* Оставляем переменные,
-         которые уже может использовать SendPulse */
 
       triangle_top: values.top,
       triangle_left: values.left,
